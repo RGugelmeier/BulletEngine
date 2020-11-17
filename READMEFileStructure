@@ -1,0 +1,14 @@
+This is the file structure for the files shown here:
+
+Bullet(Top)
+  Bullet
+  Dependencies
+    GLEW
+    GLFW
+    Meshes
+    SDL2
+      bin
+      docs
+      include
+      lib
+  Bullet.sln
