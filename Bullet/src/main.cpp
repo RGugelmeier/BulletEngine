@@ -4,18 +4,21 @@
 #include <SDL.h>
 #undef main
 
-#include "Scene0.h"
+#include "SceneManager.h"
 #include "Mesh.h"
+#include "Shader.h"
 
 int main(void)
 {
 	glfwInit();
 	glewInit();
-	Scene0* scene0 = new Scene0;
+	
+	SceneManager* sceneMan = new SceneManager();
 
-	scene0->OnCreate("Test", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1200, 700, false);
-	scene0->Update();
-	scene0->OnDestroy();
+	if (sceneMan->Initialize("Window", 1280, 720) == true)
+	{
+		sceneMan->Run();
+	}
 
 	return 0;
 }
