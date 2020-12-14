@@ -3,10 +3,10 @@
 #include "Vec4.h"
 class Matrix4
 {
-private:
+public:
+	//The matrix array. Needs to be public so matrix3s can get to it.
 	float matrix4[16];
 
-public:
 	//Set up the matrix manually.
 	Matrix4(float x0, float x1, float x2, float x3,
 			float y0, float y1, float y2, float y3,

@@ -1,9 +1,7 @@
 #include "SDL.h"
 #include "Timer.h"
 
-Timer::Timer() {
-	//prevTicks = 0;
-	//currTicks = 0;
+Timer::Timer() : prevTicks(0), currentTicks(0) {
 
 	startTicks = 0;
 	pausedTicks = 0;
@@ -14,14 +12,16 @@ Timer::Timer() {
 
 Timer::~Timer() {}
 
-/*void Timer::UpdateFrameTicks() {
-	prevTicks = currTicks;
-	currTicks = SDL_GetTicks();
-}*/
+void Timer::UpdateFrameTicks() {
+	//Updates the previous and current tick variables every tick.
+	prevTicks = currentTicks;
+	currentTicks = SDL_GetTicks();
+}
 
 void Timer::Start() {
-	/*prevTicks = SDL_GetTicks();
-	currTicks = SDL_GetTicks();*/
+	//Fill previous and current tick variables.
+	prevTicks = SDL_GetTicks();
+	currentTicks = SDL_GetTicks();
 
 	//Start the timer
 	started = true;
@@ -47,6 +47,9 @@ void Timer::Stop()
 	pausedTicks = 0;
 }
 
+
+// TO-DO
+// SET IT SO WHEN THE TIMER IS PAUSED, IT ALSO PAUSES THE SCENE'S RENDING AND UPDATES
 void Timer::Pause()
 {
 	//If the timer is running and isn't already paused
@@ -77,7 +80,7 @@ void Timer::Unpause()
 	}
 }
 
-Uint32 Timer::GetTicks()
+float Timer::GetTicks()
 {
 	//The actual timer time
 	Uint32 time = 0;
@@ -101,6 +104,27 @@ Uint32 Timer::GetTicks()
 	return time;
 }
 
+//Used for everythings Update() function. DeltaTime is used to keep the update function's time consistent between frames.
+float Timer::GetDeltaTime() const
+{
+	//Gets delta time.
+	return static_cast<float>(currentTicks - prevTicks) / 1000.0f;
+}
+
+//This function acts to set the fps to a limit. That way you can easily control the speed at which the timer performs.
+unsigned int Timer::GetSleepTime(const unsigned int fps_) const
+{
+	unsigned int milliSecsPerFrame = 1000 / fps_;
+	if (milliSecsPerFrame == 0) {
+		return 0;
+	}
+	unsigned int sleepTime = milliSecsPerFrame - SDL_GetTicks();
+	if (sleepTime > milliSecsPerFrame) {
+		return milliSecsPerFrame;
+	}
+	return sleepTime;
+}
+
 bool Timer::isStarted()
 {
 	//Timer is running and paused or unpaused
@@ -112,21 +136,3 @@ bool Timer::isPaused()
 	//Timer is running and paused
 	return paused && started;
 }
-
-/*float Timer::GetDeltaTime() const {
-	return (float(currTicks - prevTicks)) / 1000.0f;
-}
-
-int Timer::GetSleepTime(const int fps) const {
-	int milliSecsPerFrame = 1000 / fps;
-	if (milliSecsPerFrame == 0) {
-		return 0;
-	}
-
-	int sleepTime = milliSecsPerFrame - (SDL_GetTicks() - currTicks);
-	if (sleepTime > milliSecsPerFrame) {
-		return milliSecsPerFrame;
-	}
-
-	return sleepTime;
-}*/

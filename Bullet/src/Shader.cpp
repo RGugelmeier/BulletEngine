@@ -1,29 +1,31 @@
 #include "Shader.h"
-#include "Renderer.h"
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <sstream>
-
-
-
-Shader::Shader(const std::string& filePath)
-    : m_FilePath(filePath), m_RendererID(0)
+//When created, parse the shader into it's vertex and fragment parts, then run createShader to set our RendererID.
+Shader::Shader(const std::string& filePath) : m_FilePath(filePath), m_RendererID(0)
 {
     ShaderProgramSource source = ParseShader(filePath);
     m_RendererID = CreateShader(source.VertexSource, source.FragmentSource);
+    setUniformLocations();
 }
 
+//Delete the rendererID
 Shader::~Shader()
 {
-    GLCall(glDeleteProgram(m_RendererID));
+    glDeleteProgram(m_RendererID);
 }
 
+GLuint Shader::getUniformID(std::string name)
+{
+    return m_UniformLocationCache[name];
+}
+
+//This will read through the shader text file given as filepath and certain things in it to determine when the shader code starts, and what is the fragment and vertex shaders.
 ShaderProgramSource Shader::ParseShader(const std::string& filepath)
 {
+    //Set filepath to be an ifstream, so it can be used in getline()
     std::ifstream stream(filepath);
 
+    //Enumerate the shader type for easier understanding.
     enum class shaderType
     {
         NONE = -1, VERTEX = 0, FRAGMENT = 1
@@ -32,94 +34,115 @@ ShaderProgramSource Shader::ParseShader(const std::string& filepath)
     std::string line;
     std::stringstream ss[2];
     shaderType type = shaderType::NONE;
+
+    //Read through the shader file and store each line into line. ss stores the shaders. ss[0] being vertex and ss[1] being fragment. The shader file must include these shader type headers.
     while (getline(stream, line))
     {
         if (line.find("#shader") != std::string::npos)
         {
             if (line.find("vertex") != std::string::npos)
+            {
                 type = shaderType::VERTEX;
+            }
             else if (line.find("fragment") != std::string::npos)
+            {
                 type = shaderType::FRAGMENT;
+            }
         }
         else
         {
+            //This stores the lines into ss which keeps the fragment and vertex shaders.
             ss[(int)type] << line << '\n';
         }
     }
-
     return { ss[0].str(), ss[1].str() };
 }
 
+//This compiles the shader program into a usable program for gl calls.
 unsigned int Shader::CompileShader(unsigned int type, const std::string& source)
 {
     unsigned int id = glCreateShader(type);
     const char* src = source.c_str();
-    GLCall(glShaderSource(id, 1, &src, nullptr));
-    GLCall(glCompileShader(id));
+    glShaderSource(id, 1, &src, nullptr);
+    glCompileShader(id);
 
     int result;
-    GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
+    glGetShaderiv(id, GL_COMPILE_STATUS, &result);
     if (result == GL_FALSE) // or !result
     {
         int length;
-        GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
+        glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
         char* message = (char*)_malloca(length * sizeof(char));
-        GLCall(glGetShaderInfoLog(id, length, &length, message));
+        glGetShaderInfoLog(id, length, &length, message);
         std::cout << "Failed to compile" <<
             (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << "shader!" << std::endl;
         std::cout << message << std::endl;
-        GLCall(glDeleteShader(id));
+        glDeleteShader(id);
         return 0;
     }
 
     return id;
 }
 
+//Attaches the shaders to this program.
 unsigned int Shader::CreateShader(const std::string& vertShader, const std::string& fragShader)
 {
     unsigned int program = glCreateProgram();
     unsigned int vs = CompileShader(GL_VERTEX_SHADER, vertShader);
     unsigned int fs = CompileShader(GL_FRAGMENT_SHADER, fragShader);
 
-    GLCall(glAttachShader(program, vs));
-    GLCall(glAttachShader(program, fs));
-    GLCall(glLinkProgram(program));
-    GLCall(glValidateProgram(program));
+    glAttachShader(program, vs);
+    glAttachShader(program, fs);
+    glLinkProgram(program);
+    glValidateProgram(program);
 
-    GLCall(glDeleteShader(vs));
-    GLCall(glDeleteShader(fs));
+    glDeleteShader(vs);
+    glDeleteShader(fs);
 
     return program;
 }
 
 void Shader::Bind() const
 {
-    GLCall(glUseProgram(m_RendererID));
+    glUseProgram(m_RendererID);
 }
 
 void Shader::Unbind() const
 {
-    GLCall(glUseProgram(0));
+    glUseProgram(0);
 }
 
-void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3)
-{
-    GLCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
-}
+void Shader::setUniformLocations() {
+    int count;
+    GLsizei actualLen;
+    GLint size;
+    GLenum type;
+    char* name;
+    int maxUniformListLength;
+    unsigned int loc;
 
-int Shader::GetUniformLocation(const std::string& name)
-{
-    if (m_UniformLocationCache.find(name) != m_UniformLocationCache.end())
-    {
-        return m_UniformLocationCache[name];
+    //Get how many active uniforms there are and print to console.
+    glGetProgramiv(m_RendererID, GL_ACTIVE_UNIFORMS, &count);
+    printf("There are %d active Uniforms\n", count);
+
+    // Get the length of the longest named uniform 
+    glGetProgramiv(m_RendererID, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformListLength);
+
+    //Allocate space for the uniform's name 
+    name = (char*)malloc(sizeof(char) * maxUniformListLength);
+
+
+    for (int i = 0; i < count; ++i) {
+        //Get the name of the ith uniform
+        glGetActiveUniform(m_RendererID, i, maxUniformListLength, &actualLen, &size, &type, name);
+        //Get the (unsigned int) loc for this uniform
+        loc = glGetUniformLocation(m_RendererID, name);
+        std::string uniformName = name;
+        m_UniformLocationCache[uniformName] = loc;
+
+        //Print uniform locations to console.
+        printf("\"%s\" loc:%d\n", uniformName.c_str(), m_UniformLocationCache[uniformName]);
     }
-
-    GLCall(int location = glGetUniformLocation(m_RendererID, name.c_str()));
-    if (location == -1)
-    {
-        std::cout << "Warning: uniform ''" << name << " doesnt exist!" << std::endl;
-    }
-
-    m_UniformLocationCache[name] = location;
-    return location;
+    //Free the previously allocated space for the uniform's name.
+    free(name);
 }

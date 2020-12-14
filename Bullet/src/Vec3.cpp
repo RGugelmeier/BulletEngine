@@ -46,7 +46,7 @@ void Vec3::ScalarMultiplication(float s)
 }
 
 /* Mag Member Funtion
-	Calculates and returns the vector's magnitude */
+	Calculates and returns the vector's magnitude (Length) */
 float Vec3::Mag()
 {
 	float mag = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
@@ -107,6 +107,13 @@ void Vec3::RotateZ(float angle)
 
 	x = xtemp;
 	y = ytemp;
+}
+
+void Vec3::Zero()
+{
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
 }
 
 /* Overload the + symbol to add vectors */

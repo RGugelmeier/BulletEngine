@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 
+//Creates the vertex buffer
 VertexBuffer::VertexBuffer(const void* data, unsigned int size)
 {
     GLCall(glGenBuffers(1, &m_RendererID));

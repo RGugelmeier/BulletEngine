@@ -1,11 +1,5 @@
-/***
-THIS IS AN EMPTY SCENE.
-USE THIS CLASS AS A BASE FOR NEW SCENES. 
-WHEN CREATING A NEW SCENE, COPY AND PASTE THIS CODE INTO THE NEW CODE AND CHANGE ALL "Scene0"s TO WHATEVER SCENE NUMBER IT IS
-***/
-
-#ifndef SCENE0_H
-#define SCENE0_H
+#ifndef SCENE1_H
+#define SCENE1_H
 
 #include <iostream>
 
@@ -18,8 +12,12 @@ WHEN CREATING A NEW SCENE, COPY AND PASTE THIS CODE INTO THE NEW CODE AND CHANGE
 #include <string>
 #include <sstream>
 
+// TO-DO
+// ADD AN ARRAY SYSTEM FOR COLLISION BOXES AND MAYBE GAMEOBJECTS?
+
 //Personally created class includes
 #include "Scene.h"
+#include "Sphere.h"
 #include "SceneManager.h"
 #include "SDL.h"
 #include "SDL_image.h"
@@ -35,12 +33,13 @@ WHEN CREATING A NEW SCENE, COPY AND PASTE THIS CODE INTO THE NEW CODE AND CHANGE
 #include "ObjLoader.h"
 #include "Camera.h"
 #include "Window.h"
-
-class Scene0 : public Scene
+#include "PlayerCharacter.h"
+#include "Cube.h"
+class Scene1 : public Scene
 {
 public:
-	Scene0();
-	~Scene0();
+	Scene1();
+	~Scene1();
 
 	/*
 	OnCreate = Run once when the Scene is created. Take in values for window creation.
@@ -58,6 +57,8 @@ public:
 	void OnDestroy() override;
 	inline bool running() { return isRunning; };
 
+	inline PlayerCharacter GetPlayer() { return *player; };
+
 private:
 
 	/*
@@ -72,11 +73,16 @@ private:
 	*/
 	bool printTime;
 	bool isRunning;
+	Sphere* sphere;
+	PlayerCharacter* player;
+	Cube* floor;
 	class Timer* timer;
 	SDL_Window* window;
 	SDL_GLContext context;
 	SDL_Event* event;
-	Mesh* mesh;
+	Mesh* playerMesh; //Mario
+	Mesh* sphereMesh; //Sphere
+	Mesh* floorMesh; //Cube
 	Shader* shader;
 	Renderer* renderer;
 	Camera* camera;
@@ -85,4 +91,4 @@ private:
 	IndexBuffer* ib;
 };
 
-#endif // !Scene0
+#endif // !Scene1

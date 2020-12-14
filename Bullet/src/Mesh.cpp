@@ -64,5 +64,5 @@ void Mesh::Render() const
 	//Bind vertex array object, then draw, then unbind the vertex array object.
 	glBindVertexArray(vao);
 	glDrawArrays(drawmode, 0, vertices.size());
-	glBindVertexArray(0); // Disable the VAO
+	glBindVertexArray(0); // Unbind the VAO
 }

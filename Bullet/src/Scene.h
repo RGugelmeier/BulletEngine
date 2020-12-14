@@ -10,10 +10,10 @@ public:
 	Scene() {}
 	~Scene() {}
 
-	virtual bool OnCreate(const char* title, int xPos, int yPos, int width, int height, bool fullScreen) = 0;
+	virtual bool OnCreate() = 0;
 	virtual void OnDestroy() = 0;
-	virtual void Update() = 0;
+	virtual void Update(const float deltaTime) = 0;
 	virtual void Render() const = 0;
-	virtual void HandleEvents() = 0;
+	virtual void HandleEvents(SDL_Event& sdlEvent) = 0;
 };
 #endif

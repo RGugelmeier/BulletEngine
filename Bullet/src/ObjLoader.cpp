@@ -3,7 +3,7 @@
 #include <cstring>
 #include "ObjLoader.h"
 
-// Initializing vectors
+// Initializing OBJ vectors
 std::vector<Vec3> ObjLoader::normals;
 std::vector<Vec3> ObjLoader::vertices;
 std::vector<Vec2> ObjLoader::uvCoords;
@@ -15,7 +15,7 @@ bool ObjLoader::loadOBJ(const char* path) {
 	vertices.clear();
 	uvCoords.clear();
 
-	//Create variables for temporary mesh values
+	//Create lists for mesh values
 	std::vector<unsigned int> vertexIndices, uvIndices, normalIndices;
 	std::vector<Vec3> temp_vertices;
 	std::vector<Vec2> temp_uvs;
@@ -29,7 +29,7 @@ bool ObjLoader::loadOBJ(const char* path) {
 		return false;
 	}
 
-
+	//Parse through the OBJ file and store data into the lists
 	while (true) {
 		char lineHeader[128];
 		/// read the first word of the line
